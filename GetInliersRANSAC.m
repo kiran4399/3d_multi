@@ -1,45 +1,41 @@
-function [ y1, y2, idx ] = GetInliersRANSAC( x1, x2 )
-%GETINLIERRANSAC Summary of this function goes here
-%   Reject outlier correspondences
-n = 0;
-M = size(x1,1);
-p = 0.99;
+function [y1,y2,idx] = GetInliersRANSAC(x1,x2)
+%% Input:
+% x1 and x2: Nx2 matrices whose row represents a correspondence.
+%% Output:
+% y1 and y2: Nix2 matrices whose row represents an inlier correspondence 
+%            where Ni is the number of inliers.
+% idx: Nx1 vector that indicates ID of inlier y1.
 
-threshold = 6; % 1e-32;
-N = 1;
-trials = 0;
-idx = [];
 
-x1 = makeHomogeneous(x1, '2D');
-x2 = makeHomogeneous(x2, '2D');
+%% Your Code goes here
+maxIter = 3000;
+threshold = 0.005;
 
-%while N > trials
-while trials < 1000
-    % Choose 8 correspondences, xhat1 and xhat2, randomly
-    rand_idx = randperm(M,8);
-    F = EstimateFundamentalMatrix(x1(rand_idx,:), x2(rand_idx,:));
-    S = [];
-    for j=1:M
-        if abs(my_dist(F'*x2(j,:)',x1(j,:)') + my_dist(F*x1(j,:)', x2(j,:)')) < threshold
-            S(end+1) = j;
-        end
-    end
-    nS = length(S);
-    if (n < nS)
-        n = nS;
-        idx = S;
-        %nS
-        %abs(my_dist(F'*x2(j,:)',x1(j,:)') + my_dist(F*x1(j,:)', x2(j,:)'))
-        %e = (M-nS) / M; % ratio of outliers
-        %N = log(1-p) / log(1-(1-e)^8); % Leature slides 13, pg. 42
-    end
+N = size(x1, 1);
+bestNinliers = 0;
+
+for i = 1:maxIter
+    chosen = randperm(N, 8);
+    F = EstimateFundamentalMatrix(x1(chosen,:), x2(chosen,:));
+    d = evaluateF(x1, x2, F);
     
-    if (nS == M)
-        break;
+    inliers = (d < threshold);
+    if sum(inliers) > bestNinliers
+        bestNinliers = sum(inliers);
+        idx = inliers;
     end
-    trials = trials + 1;
+end    
+
+y1 = x1(idx, :);
+y2 = x2(idx, :);
+
 end
 
-y1 = x1(idx,1:2);
-y2 = x2(idx,1:2);
 
+function d = evaluateF(x1, x2, F)
+    N = size(x1, 1);
+
+    tmp = [x2 ones(N, 1)] * F;
+    tmp = tmp .* [x1 ones(N, 1)]; 
+    d = abs(sum(tmp, 2));
+end
