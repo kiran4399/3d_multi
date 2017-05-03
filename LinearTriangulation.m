@@ -7,7 +7,6 @@ function [X] = LinearTriangulation(K, C1, R1, C2, R2, x1, x2)
 %% Outputs: 
 % X: Nx3 matrix whose row represents 3D triangulated point.
 
-%% Your Code goes here
 N = size(x1, 1);
 X = zeros(N, 3);
 

@@ -3,7 +3,7 @@ clear;
 
 addpath(genpath('.'))
 %% load matching file
-load('../Data/matchesMeta.mat', 'Mx', 'My', 'V', 'Color');
+load('Data/matchesMeta.mat', 'Mx', 'My', 'V', 'Color');
 
 %% load K here
 K = [568.996140852 0 643.21055941;
